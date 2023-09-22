@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+    app:
+        build: .
+        environment:
+            - DB_HOST=db
+            - DB_PORT=3306
+            - DB_USERNAME=perfectpay
+            - DB_DATABASE=perfectpay
+        ports:
+            - 810:80
+        volumes:
+            - ./:/var/www/html
+        depends_on:
+            - db
+            - dbtest
+        links:
+            - redis
+    db:
+        image: mysql:8.1
+        ports:
+            - 33610:3306
+        command: --max-connections=1024 --default-authentication-plugin=mysql_native_password --log-bin-trust-function-creators=1
+        volumes:
+            - .docker/dbdata:/var/lib/mysql
+        environment:
+            MYSQL_DATABASE: perfectpay
+            MYSQL_USER: perfectpay
+            MYSQL_PASSWORD: perfectpay
+            MYSQL_ROOT_PASSWORD: perfectpay
+
+    dbtest:
+        image: mysql:8.1
+        ports:
+            - 33611:3306
+        command: --max-connections=1024 --default-authentication-plugin=mysql_native_password --log-bin-trust-function-creators=1
+        environment:
+            MYSQL_DATABASE: pp-test
+            MYSQL_USER: pp-test
+            MYSQL_PASSWORD: pp-test
+            MYSQL_ROOT_PASSWORD: pp-test
+
+    redis:
+        image: redis:7.0.6-alpine
+        ports:
+            - "3204:6379"
+            - "6379:6379"
