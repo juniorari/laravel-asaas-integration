@@ -7,7 +7,7 @@ taking into account that the customer must access a page where they will select 
 payment option between Boleto, Credit Card or Pix.
 
 
-##Technologies
+## Technologies
 
 
 - [Laravel Framework](https://laravel.com/)
@@ -35,7 +35,7 @@ Requirements to run the project:
 
 ## Instalation
 
-#####<u>*PS: Windows user's it's highly recommended execute WSL Prompt*</u>
+##### <u>*PS: Windows user's it's highly recommended execute WSL Prompt*</u>
 
 Clone project repository from `git@github.com:juniorari/laravel-asaas-integration.git`
 ```
