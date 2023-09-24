@@ -40,7 +40,7 @@ Requirements to run the project:
 Clone project repository from `git@github.com:juniorari/laravel-asaas-integration.git`
 ```
 $ git clone git@github.com:juniorari/laravel-asaas-integration.git
-# cd laravel-asaas-integration/
+$ cd laravel-asaas-integration/
 ```
 
 If you have installed `make`, just execute:
