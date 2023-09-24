@@ -17,3 +17,16 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+
+
+Route::group(['namespace' => 'Api'], function () {
+
+    Route::group(['prefix' => 'payments'], function () {
+        Route::post('', 'AsaasController@store')->name('api.payment');
+//        Route::get('{id}', 'AsaasController@show');
+    });
+
+});
+
