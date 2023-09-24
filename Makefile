@@ -18,6 +18,14 @@ build:
 composer-install:
 	docker-compose exec app composer install
 
+.PHONY: npm
+npm:
+	docker-compose exec app npm install
+
+.PHONY: npm-build
+npm-build:
+	docker-compose exec app npm run build
+
 .PHONY: up
 up:
 	docker-compose up -d app db dbtest redis
