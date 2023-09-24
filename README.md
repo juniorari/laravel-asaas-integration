@@ -78,9 +78,9 @@ $ chmod -Rf 777 ../storage
 $ php artisan key:generate
 ```
 
-Create and Update your `TOKEN_ASAAS` on `.env` file:
+Create and Update your `ASAAS_TOKEN` on `.env` file:
 ```
-TOKEN_ASAAS=XXXXXXXXXXXXXXXXX
+ASAAS_TOKEN=XXXXXXXXXXXXXXXXX
 ```
 
 Execute [http://localhost:810/](http://localhost:810/)
