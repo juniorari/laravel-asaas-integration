@@ -12,13 +12,15 @@
                     <div class="card-body">
 
                         <div class="row">
-                            <div class="col-12 text-center">
+                            <div class="col-12">
 
                                 @if($response->type == 'PIX')
-                                <p class="mb-0">Faça a leitura do QR Code abaixo para efetuar o pagamento.</p>
-                                <img src="data:image/jpeg;base64,{{ $response->encodedImage }}">
-                                <p>Ou copie e cole o código abaixo:</p>
-                                <p id="copy" class="alert alert-secondary">{{ $response->payload }}</p>
+                                <div class="text-center">
+                                    <p class="mb-0">Faça a leitura do QR Code abaixo para efetuar o pagamento.</p>
+                                    <img src="data:image/jpeg;base64,{{ $response->encodedImage }}">
+                                    <p>Ou copie e cole o código abaixo:</p>
+                                    <p id="copy" class="alert alert-secondary">{{ $response->payload }}</p>
+                                </div>
                                 @endif
 
 
@@ -26,6 +28,34 @@
                                 <iframe src="{{ $response->boleto }}" width="100%" height="450px"></iframe>
                                 @endif
 
+                                @if($response->type == 'CREDIT_CARD')
+                                    <table class="table table-borderless table-striped">
+                                        <thead>
+                                        <tr class="table-header">
+                                            <th class="text-center">#</th>
+                                            <th class="text-center">Status</th>
+                                            <th>Descrição</th>
+                                            <th class="text-center">Valor</th>
+                                            <th class="text-center">Vencimento</th>
+                                            <th class="text-center">Cartão Utilizado</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        @foreach($response->data as $idx => $data)
+                                        <tr>
+                                            <td class="text-center"><?=($idx+1)?></td>
+                                            <td class="text-center"><?=$data->status?></td>
+                                            <td><?=(!$data->installmentNumber ? 'À Vista. - ' : '') . $data->description?></td>
+                                            <td class="text-center">{{ formatCurrencyValue($data->value) }}</td>
+                                            <td class="text-center">{{ formatDate($data->dueDate) }}</td>
+                                            <td class="text-center">
+                                                {{ formatCrediCard($data->creditCard) }}
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                        </tbody>
+                                    </table>
+                                @endif
 
                             </div>
                         </div>

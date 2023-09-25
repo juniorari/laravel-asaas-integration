@@ -20,12 +20,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 
-
 Route::group(['namespace' => 'Api'], function () {
 
     Route::group(['prefix' => 'payments'], function () {
         Route::post('', 'AsaasController@store')->name('api.payment');
-//        Route::get('{id}', 'AsaasController@show');
     });
 
 });

@@ -20,7 +20,4 @@ class Purchase extends Model
         'total_value',
     ];
 
-    public function formatValue($value) {
-        return number_format($value, 2, ',', '.');
-    }
 }

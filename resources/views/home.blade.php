@@ -119,12 +119,12 @@ use App\Models\Payment;
                                         <label for="installment">Selecione a quantidade de parcelas:</label>
                                         <select class="form-control" id="installment" name="payment_installment">
 
-                                            <option value="">À Vista {{ $purchase->formatValue($purchase->total_value) }}</option>
+                                            <option value="">À Vista {{ formatCurrencyValue($purchase->total_value) }}</option>
                                             <?php
                                             $value = $purchase->total_value;
                                             for ($i = 2; $i <= 12; $i++) {
                                                 $val = ($value / $i);
-                                                $val = $purchase->formatValue($val);
+                                                $val = formatCurrencyValue($val);
                                                 ?>
                                             <option value="{{ $i }}">{{ $i }} x R$ {{ $val }}</option>
                                             <?php
@@ -205,7 +205,13 @@ use App\Models\Payment;
                                 <td class="text-center"><?=$idx+1?></td>
                                 <td class="text-center"><?=$item['status']?></td>
                                 <td><?=$item['description']?></td>
-                                <td class="text-center"><?=number_format($item['value'], 2, ',','.')?></td>
+                                <td class="text-center" nowrap><?php
+                                    if (!$item['installment']) {
+                                        echo formatCurrencyValue($item['value']);
+                                    } else {
+                                        echo $item['installment'] . ' x '. formatCurrencyValue($item['value'] / $item['installment']);
+                                    }
+                                ?></td>
                                 <td class="text-center"><?=date('d/m/Y', $item['dus_date'])?></td>
                                 <td class="text-center"><?=$item['billing_type']?></td>
                                 <td class="text-center">
@@ -214,7 +220,7 @@ use App\Models\Payment;
                                 <td class="text-center">
                                     <?php
                                     if ($item['invoice_url']) { ?>
-                                        <a href="<?=$item['invoice_url']?>" class="btn btn-sm btn-outline-primary">Abrir</a>
+                                        <a href="<?=$item['invoice_url']?>" target="_blank" class="btn btn-sm btn-outline-primary">Abrir</a>
                                     <?php } ?>
                                 </td>
                             </tr>
@@ -283,30 +289,23 @@ use App\Models\Payment;
             type: type,
             data_cc: dataCC
         }).then(response => {
-            console.log(response);
-            // window.location = 'show/' + response.data.id
+            console.log('resposta OK', response);
+            window.location = 'show/' + response.data.idPayment
         })
         .catch(error => {
             let response = error.response;
             console.log(response);
-            // switch (response.status) {
-            //     case 422:
-            //         alert('VERIFIQUE OS ERROS NO FORMULÁRIO:\n\n' + response.data);
-            //         break;
-            //
-            //     default:
+            switch (response.status) {
+                case 400:
+                case 422:
+                    alert('Os seguintes erros foram encontrados:\n\n' + response.data);
+                    break;
+                default:
                     alert(response.data);
-            // }
-        })
-        .finally(() => {
+            }
             $btn.removeAttr('disabled').html(txt);
-        });
+        })
 
-    }
-
-    function formatValue(value){
-        value = parseFloat(value);
-        return value.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
     }
 
 </script>

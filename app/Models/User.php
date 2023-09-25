@@ -21,7 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'cpf',
-        'asaas_id',
+        'id_asaas',
         'postal_code',
         'address',
         'address_number',

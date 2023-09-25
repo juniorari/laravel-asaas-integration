@@ -43,20 +43,21 @@ class AsaasController extends Controller
             //verifica se já tem o esse cliente cadastrado
             $cliente = $this->asaasService->getCliente($user->cpf);
 
-            if ($cliente && !count($cliente->data)) {
+            if ($cliente && count($cliente->data)) {
+                $cliente = $cliente->data[0];
+            } else {
                 //criamos o cliente no Asaas
                 $response = $this->asaasService->createCliente($user);
+
                 if ($response['code'] != self::SUCCESS_RESPONSE) {
                     return response()->json($response['data'], $response['code']);
                 }
                 $cliente = $response['data'];
-            } else {
-                $cliente = $cliente->data[0];
             }
 
             if (!$user->id_asaas) {
                 $user->update([
-                    'is_asaas' => $cliente->id,
+                    'id_asaas' => $cliente->id,
                 ]);
             }
 
@@ -75,6 +76,7 @@ class AsaasController extends Controller
             switch ($request->get('type')) {
                 case 'BOLETO':
                     $response = $this->asaasService->paymentBoleto($payment->toArray());
+                    $response['data']->idPayment = $payment->id;
                     // Atualiza as informações do pagamento
                     $payment->update([
                         'asaas_id'      => $response['data']->id,
@@ -87,6 +89,7 @@ class AsaasController extends Controller
                     break;
                 case 'PIX':
                     $response = $this->asaasService->paymentPix($payment->toArray());
+                    $response['data']->idPayment = $payment->id;
 
                     // Atualiza as informações do pagamento
                     $payment->update([
@@ -105,14 +108,17 @@ class AsaasController extends Controller
 
                     if ($response['code'] === self::SUCCESS_RESPONSE) {
                         $dataUpdate = [
-                            'asaas_id' => $response['data']->id,
-                            'status' => $response['data']->status,
+                            'asaas_id'      => $response['data']->id,
+                            'status'        => $response['data']->status,
+                            'bank_slip_url' => $response['data']->transactionReceiptUrl,
                         ];
+                        $request = $request->all();
 
-                        if ($request['dados_cc']['installment']) {
-                            $dataUpdate['installment'] = $request['dados_cc']['installment'];
-                            $dataUpdate['installment_token'] = $response['data']['installment'];
+                        if ($request['data_cc']['installment']) {
+                            $dataUpdate['installment'] = $request['data_cc']['installment'];
+                            $dataUpdate['installment_token'] = $response['data']->installment;
                         }
+                        $response['data']->idPayment = $payment->id;
 
                         $payment->update($dataUpdate);
                     }
@@ -131,7 +137,7 @@ class AsaasController extends Controller
             return response()->json($response['data'], $response['code']);
 
         } catch (\Exception $e) {
-            Log::error('Erro na requisição \'boleto\'', [$e->getMessage(), $e->getTraceAsString()]);
+            Log::error('Erro na chamada store', [$e->getMessage(), $e->getTraceAsString()]);
             return response()->json('Erro na requisição: ' . $e->getMessage(), 400);
         }
     }

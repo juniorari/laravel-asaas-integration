@@ -4,9 +4,11 @@
 namespace App\Services;
 
 
+use App\Models\Payment;
 use App\Models\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\InvalidArgumentException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -37,7 +39,7 @@ class AsaasService
 
     public function getCliente($cpf)
     {
-        $response = $this->sendHttp('GET', 'customers', null, ['cpfCnpj' => $cpf]);
+        $response = $this->sendHttp('GET', 'customers?cpfCnpj='.$cpf);
         if ($response['code'] == 200) {
             return $response['data'];
         }
@@ -152,7 +154,7 @@ class AsaasService
             'postalCode'    => 'required|string|min:8|max:8',
             'address'       => 'required|string|max:255',
             'addressNumber' => 'required|string|max:10',
-            'phone'         => 'required|string|min:11|max:20',
+            'phone'         => 'required|string|min:10|max:20',
         ]);
 
 
@@ -195,11 +197,28 @@ class AsaasService
     {
         return $this->sendHttp(
             'GET',
-            'payments/'.$id.'/pixQrCode', null, []
+            'payments/'.$id.'/pixQrCode'
         );
     }
 
-    protected function sendHttp($method, $endpoint, $body = null, $params = null)
+    /**
+     * @param Payment $payment
+     * @return array
+     */
+    public function getPaymentCC($payment)
+    {
+        if ($payment->installment) {
+            $endpoint = 'payments?limit=12&installment=' . $payment->installment_token;
+        } else {
+            $endpoint = 'payments/'.$payment->asaas_id;
+        }
+        return $this->sendHttp(
+            'GET',
+            $endpoint
+        );
+    }
+
+    protected function sendHttp($method, $endpoint, $body = null)
     {
         $content = [
             'headers' => [
@@ -208,24 +227,24 @@ class AsaasService
                 'access_token' => $this->TOKEN,
             ],
         ];
-        if ($params) {
-            $content = array_merge(['params' => $params], $content);
-        }
+
         if ($body) {
             $content = array_merge(['body' => json_encode($body)], $content);
         }
+        Log::debug('Chamada Asaas', ['api' => "$method => $endpoint", 'content' => $content]);
         $response = $this->client;
         try {
-//            dd($method, $this->API_URL . $url, $content);
             $response = $response->request($method, $this->API_URL . $endpoint, $content);
-//            dd($response->getBody()->getContents());
-//            return json_decode($response->getBody()->getContents());
+            Log::debug('Retorno Asaas', [$response->getStatusCode(), $response->getBody()->getContents()]);
             return $this->prepareResponse($response);
-        } catch (ClientException $e) {
+        } catch (InvalidArgumentException $e) {
+            Log::error('InvalidArgumentException API Asaas', [$e->getMessage(), $e->getResponse()]);
             return $this->prepareResponse($e->getResponse());
-//            dd($e->getMessage(), $e->getTraceAsString(), $e->getResponse()->getStatusCode(), $e->getResponse()->getBody()->getContents());
+        } catch (ClientException $e) {
+            Log::error('ClientException API Asaas', [$e->getMessage(),$e->getResponse()]);
+            return $this->prepareResponse($e->getResponse());
         } catch (\Exception $e) {
-            Log::error('Erro ao chamar API Asaas', [$response->getBody()->getContents(), $e->getMessage(), $e->getTraceAsString()]);
+            Log::error('Exception API Asaas', [$response->getBody()->getContents(), $e->getMessage(), $e->getTraceAsString()]);
             return $this->prepareResponse(false);
         }
     }
@@ -243,7 +262,8 @@ class AsaasService
         }
         $code = $response->getStatusCode();
 
-        $data = json_decode($response->getBody()->getContents());
+//        $data = json_decode($response->getBody()->getContents());
+        $data = json_decode($response->getBody());
 
         if(isset($data->errors)){
             $errors = array_map(function ($error) {

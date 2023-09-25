@@ -51,9 +51,9 @@ class RegisterController extends Controller
      */
     protected function validator(array $data)
     {
-        $data['cpf'] = self::onlyNumber( $data['cpf']);
-        $data['phone'] = self::onlyNumber( $data['phone']);
-        $data['postal_code'] = self::onlyNumber( $data['postal_code']);
+        $data['cpf'] = formatOnlyNumber( $data['cpf']);
+        $data['phone'] = formatOnlyNumber( $data['phone']);
+        $data['postal_code'] = formatOnlyNumber( $data['postal_code']);
 
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
@@ -64,7 +64,7 @@ class RegisterController extends Controller
             'postal_code'    => 'required|string|min:8|max:8',
             'address'        => 'required|string|max:255',
             'address_number' => 'required|string|max:10',
-            'phone'          => 'required|string|min:11|max:20',
+            'phone'          => 'required|string|min:10|max:20',
 
         ], [
             'cpf.unique' => 'O CPF já existe cadastrado'
@@ -78,17 +78,19 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        $data['cpf'] = formatOnlyNumber( $data['cpf']);
+        $data['phone'] = formatOnlyNumber( $data['phone']);
+        $data['postal_code'] = formatOnlyNumber( $data['postal_code']);
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'cpf' => self::onlyNumber($data['cpf']),
+            'cpf' => formatOnlyNumber($data['cpf']),
             'password' => Hash::make($data['password']),
+            'postal_code'    => $data['postal_code'],
+            'address'        => $data['address'],
+            'address_number' => $data['address_number'],
+            'phone'          => $data['phone'],
         ]);
-    }
-
-    protected function onlyNumber($val)
-    {
-        return preg_replace('/[^0-9]/', '', $val);
     }
 
 }

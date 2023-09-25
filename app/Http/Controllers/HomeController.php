@@ -32,6 +32,7 @@ class HomeController extends Controller
 
     public function show(Request $request, $idPayment)
     {
+        /** @var Payment $payment */
         $payment = Payment::where('id', $idPayment)->first();
         if (!$payment) {
             return redirect()->route('home')->with([
@@ -49,18 +50,19 @@ class HomeController extends Controller
                 $response->title  = 'BOLETO - FINALIZE O PAGAMENTO';
                 break;
             case 'CREDIT_CARD':
-                if($payment->installment_token){
-                    $response = $this->asaasService->getPaymentInstallment($payment->installment_token);
-                    if($response['status'] == 200){
-                        $response['data'] = $response['data']['data'];
-                    }
+                $ret = $this->asaasService->getPaymentCC($payment);
+                if ($ret['code'] != 200) {
+                    return redirect()->route('home')->with([
+                        'error' => $ret['data'],
+                    ]);
                 }
-                else{
-                    $response = $this->asaasService->getPayment($payment->asaas_id);
-                    if($response['status'] == 200){
-                        $response['data'] = [$response['data']];
-                    }
+
+                if($payment->installment){
+                    $response->data = $ret['data']->data;
+                } else {
+                    $response->data = [$ret['data']];
                 }
+                $response->title  = 'PARCELAS DO CARTÃO DE CRÉDITO';
         }
         $response->type = $payment->billing_type;
 
