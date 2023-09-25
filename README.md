@@ -39,17 +39,17 @@ Requirements to run the project:
 
 Clone project repository from `git@github.com:juniorari/laravel-asaas-integration.git`
 ```
-$ git clone git@github.com:juniorari/laravel-asaas-integration.git
-$ cd laravel-asaas-integration/
+git clone git@github.com:juniorari/laravel-asaas-integration.git
+cd laravel-asaas-integration/
 ```
 
 If you have installed `make`, just execute:
 ```
-$ make install
+make install
 ```
 OR
 ```
-$ bash .docker/install.sh
+bash .docker/install.sh
 ```
 
 And you see the magic!!
@@ -61,21 +61,19 @@ Otherwise (windows users or if you dont have `make`), follow these steps:
 
 
 ```
-$ docker-compose up --build -d
+docker-compose up --build -d
 ```
 
 Execute `composer` and `npm`, inside `app` container. Enter the container:
 ```
 $ docker-compose exec app bash
 ```
-After:
+Then, in this order:
 ```
-$ composer install
-$ npm install
-$ php artisan migrate
-$ cp .env.example .env
-$ chmod -Rf 777 ../storage
-$ php artisan key:generate
+composer install
+npm install
+npm npm run build
+php artisan migrate
 ```
 
 Create and Update your `ASAAS_TOKEN` on `.env` file:
@@ -87,3 +85,14 @@ Execute [http://localhost:810/](http://localhost:810/)
 
 Enjoy it!
 
+## Executing Tests
+
+To execute tests, just run the command:
+
+```
+make tests
+```
+or 
+```
+docker-compose exec app env composer tests
+```
